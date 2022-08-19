@@ -6,7 +6,7 @@ import java.security.Provider;
 public class DilithiumProvider extends Provider {
 
 	public DilithiumProvider() {
-		super("Dilithium Provider", "0.1", "For experimental use only");
+		super("Dilithium Provider", 0.1, "For experimental use only");
 		
 		 AccessController.doPrivileged(new java.security.PrivilegedAction<Object>() {
 	            @Override
