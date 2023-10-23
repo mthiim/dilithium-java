@@ -61,7 +61,7 @@ They are constructed using two parameters, namely the parameter spec (same as us
 ```bash
 byte[] pubkeyBytes = kp.getPublic().getEncoded(); // This is our bytes to be instantiated
 KeyFactory kf = KeyFactory.getInstance("Dilithium");
-PublicKey reconsructedPublicKey = kf.generatePublic(new DilithiumPublicKeySpec(spec, pubkeyBytes));
+PublicKey reconstructedPublicKey = kf.generatePublic(new DilithiumPublicKeySpec(spec, pubkeyBytes));
 ```
 
 The private key may be reconstructed in the same fashion, using the DilithiumPrivateKeySpec class.
