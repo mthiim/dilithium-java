@@ -4,7 +4,7 @@ This is a Java implementation of Dilithium, based on the C reference implementat
 
 So what is Dilithium? The cryptographic algorithms RSA and ECC have long been known known to be vulnerable to attacks using quantum computers via Shor's algorithm. While quantum computers of the prerequisite size do not yet exist in practice, there's an ongoing search for algorithms that don't have this vulnerability. In fact, [NIST](https://www.nist.gov/) has been running a competition for over 6 years in order to identify quantum-safe alternatives. On July 5th NIST [announced](https://www.nist.gov/news-events/news/2022/07/nist-announces-first-four-quantum-resistant-cryptographic-algorithms) the three picks for Post-quantum digital signature schemes. Dilithium was among the three and was in fact recommended as the primary algorithm. Big congratulations to the authors! I wanted to study this new algorithm, and what better way than to try and implement it. This is what you are looking at :-)
 
-Dilithium is part of the CRYSTALS suite of algorithms and is based on algebratic lattices. Think linear algebra but where the matrix/vector entries are polynomials in the ring $R_q = \mathbb{Z}_q[X]/(X^n+1)$. For much more information (including the specification and C reference implementation I used), see [their page](https://pq-crystals.org/index.shtml).
+Dilithium is part of the CRYSTALS suite of algorithms and is based on algebraic lattices. Think linear algebra but where the matrix/vector entries are polynomials in the ring $R_q = \mathbb{Z}_q[X]/(X^n+1)$. For much more information (including the specification and C reference implementation I used), see [their page](https://pq-crystals.org/index.shtml).
 
 Like the reference implementation, this implementation supports all three documented security levels (levels 2, 3 and 5), all using the deterministic signature scheme. It passes all the KAT tests from the package. It supports serialization and deserialization using the documented formats.
 
@@ -61,7 +61,7 @@ They are constructed using two parameters, namely the parameter spec (same as us
 ```bash
 byte[] pubkeyBytes = kp.getPublic().getEncoded(); // This is our bytes to be instantiated
 KeyFactory kf = KeyFactory.getInstance("Dilithium");
-PublicKey reconsructedPublicKey = kf.generatePublic(new DilithiumPublicKeySpec(spec, pubkeyBytes));
+PublicKey reconstructedPublicKey = kf.generatePublic(new DilithiumPublicKeySpec(spec, pubkeyBytes));
 ```
 
 The private key may be reconstructed in the same fashion, using the DilithiumPrivateKeySpec class.
