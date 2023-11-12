@@ -42,15 +42,15 @@ public class Poly {
 	public static Poly genRandom(byte[] rho, int eta, int nonce) {
 		int POLY_UNIFORM_ETA_NBLOCKS;
 		if (eta == 2) {
-			POLY_UNIFORM_ETA_NBLOCKS = ((136 + Dilithium.STREAM128_BLOCKBYTES - 1) / Dilithium.STREAM128_BLOCKBYTES);
+			POLY_UNIFORM_ETA_NBLOCKS = ((136 + Dilithium.STREAM256_BLOCKBYTES - 1) / Dilithium.STREAM256_BLOCKBYTES);
 		} else if (eta == 4) {
-			POLY_UNIFORM_ETA_NBLOCKS = ((227 + Dilithium.STREAM128_BLOCKBYTES - 1) / Dilithium.STREAM128_BLOCKBYTES);
+			POLY_UNIFORM_ETA_NBLOCKS = ((227 + Dilithium.STREAM256_BLOCKBYTES - 1) / Dilithium.STREAM256_BLOCKBYTES);
 		} else {
 			throw new IllegalArgumentException("Illegal eta: " + eta);
 		}
 
 		int ctr;
-		SHAKEDigest s = new SHAKEDigest(128);
+		SHAKEDigest s = new SHAKEDigest(256);
 		s.update(rho, 0, rho.length);
 
 		byte[] non = new byte[2];
@@ -58,15 +58,15 @@ public class Poly {
 		non[1] = (byte) ((nonce >> 8) & 0xFF);
 		s.update(non, 0, 2);
 
-		byte[] bb = new byte[POLY_UNIFORM_ETA_NBLOCKS * Dilithium.STREAM128_BLOCKBYTES];
+		byte[] bb = new byte[POLY_UNIFORM_ETA_NBLOCKS * Dilithium.STREAM256_BLOCKBYTES];
 		s.doOutput(bb, 0, bb.length);
 
 		Poly pre = new Poly(Dilithium.N);
 		ctr = rej_eta(eta, pre.coef, 0, Dilithium.N, bb, bb.length);
 
 		while (ctr < Dilithium.N) {
-			s.doOutput(bb, 0, Dilithium.STREAM128_BLOCKBYTES);
-			ctr += rej_eta(eta, pre.coef, ctr, Dilithium.N - ctr, bb, Dilithium.STREAM128_BLOCKBYTES);
+			s.doOutput(bb, 0, Dilithium.STREAM256_BLOCKBYTES);
+			ctr += rej_eta(eta, pre.coef, ctr, Dilithium.N - ctr, bb, Dilithium.STREAM256_BLOCKBYTES);
 
 		}
 		return pre;

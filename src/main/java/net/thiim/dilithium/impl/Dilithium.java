@@ -17,7 +17,7 @@ public class Dilithium {
 	public final static int POLYT0_PACKEDBYTES = 416;
 	public final static int POLYT1_PACKEDBYTES = 320;
 	public final static int SEEDBYTES = 32;
-	public final static int CRHBYTES = 48;
+	public final static int CRHBYTES = 32;
 	public final static int SHAKE128_RATE = 168;
 	public final static int SHAKE256_RATE = 136;
 	public final static int STREAM128_BLOCKBYTES = Dilithium.SHAKE128_RATE;
@@ -47,22 +47,23 @@ public class Dilithium {
 	1723600, -1803090, 1910376, -1667432, -1104333, -260646, -3833893, -2939036, -2235985, -420899, -2286327,
 	183443, -976891, 1612842, -3545687, -554416, 3919660, -48306, -1362209, 3937738, 1400424, -846154,
 	1976782 };
+	public static final int MUBYTES = 64;
 
 
 	public static KeyPair generateKeyPair(DilithiumParameterSpec spec, byte[] seed) {
 		byte[] zeta = seed;
 
-		byte[] o = Utils.getSHAKE256Digest(3*32, zeta);		
+		byte[] o = Utils.getSHAKE256Digest(2*32+64, zeta);		
 		byte[] rho = new byte[32];
-		byte[] sigma = new byte[32];
+		byte[] rhoprime = new byte[64];
 		byte[] K = new byte[32];
 
 		System.arraycopy(o, 0, rho, 0, 32);
-		System.arraycopy(o, 32, sigma, 0, 32);
-		System.arraycopy(o, 64, K, 0, 32);
+		System.arraycopy(o, 32, rhoprime, 0, 64);
+		System.arraycopy(o, 96, K, 0, 32);
 
-		PolyVec s1 = PolyVec.randomVec(sigma, spec.eta, spec.l, 0);
-		PolyVec s2 = PolyVec.randomVec(sigma, spec.eta, spec.k, spec.l);
+		PolyVec s1 = PolyVec.randomVec(rhoprime, spec.eta, spec.l, 0);
+		PolyVec s2 = PolyVec.randomVec(rhoprime, spec.eta, spec.k, spec.l);
 
 		// Generate A
 		PolyVec[] A = expandA(rho, spec.k, spec.l);
@@ -107,9 +108,9 @@ public class Dilithium {
 
 		
 		byte[] conc = Utils.concat(prv.getTr(), M);
-		byte[] mu = Utils.crh(conc);
+		byte[] mu = Utils.mucrh(conc);
 		conc = Utils.concat(prv.getK(), mu);
-		byte[] rhoprime = Utils.crh(conc);
+		byte[] rhoprime = Utils.mucrh(conc);
 
 		PolyVec s1, s2, t0;
 		if(prv instanceof DilithiumPrivateKeyImpl) {
@@ -229,7 +230,7 @@ public class Dilithium {
 		}
 
 		byte[] mu = Utils.crh(pk.getEncoded());
-		mu = Utils.getSHAKE256Digest(CRHBYTES,  mu, M);
+		mu = Utils.getSHAKE256Digest(MUBYTES,  mu, M);
 
 		Poly cp = generateChallenge(spec.tau, c);
 		

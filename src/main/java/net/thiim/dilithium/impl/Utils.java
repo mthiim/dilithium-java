@@ -40,6 +40,10 @@ public class Utils {
 		return getSHAKE256Digest(Dilithium.CRHBYTES, p);
 	}
 
+	static byte[] mucrh(byte[] p) {
+		return getSHAKE256Digest(Dilithium.MUBYTES, p);
+	}
+
 	public static int getSigLength(DilithiumParameterSpec spec) {
 		return (Dilithium.SEEDBYTES + spec.l*PackingUtils.getPolyZPackedBytes(spec.gamma1) + spec.omega + spec.k);
 	}

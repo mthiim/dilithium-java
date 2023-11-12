@@ -1,6 +1,6 @@
 # CRYSTALS - Dilithium
 
-This is a Java implementation of Dilithium, based on the C reference implementation and documentation. Further, I've wrapped it into a JCE provider, making it easy to use via a standardized interface. 
+This is a Java implementation of Dilithium (version 3.1 -- see below), based on the C reference implementation and documentation (see https://github.com/pq-crystals/dilithium). Further, I've wrapped the raw primitives into a JCE provider, making it easy to use via a standardized interface. 
 
 So what is Dilithium? The cryptographic algorithms RSA and ECC have long been known to be vulnerable to attacks using quantum computers via Shor's algorithm. While quantum computers of the prerequisite size do not yet exist in practice, there's an ongoing search for algorithms that don't have this vulnerability. In fact, [NIST](https://www.nist.gov/) has been running a competition for over 6 years in order to identify quantum-safe alternatives. On July 5th NIST [announced](https://www.nist.gov/news-events/news/2022/07/nist-announces-first-four-quantum-resistant-cryptographic-algorithms) the three picks for Post-quantum digital signature schemes. Dilithium was among the three and was in fact recommended as the primary algorithm. Big congratulations to the authors! I wanted to study this new algorithm, and what better way than to try and implement it. This is what you are looking at :-)
 
@@ -11,6 +11,11 @@ Like the reference implementation, this implementation supports all three docume
 I have a dependency on Bouncy castle, which provides the SHAKE128/256 algorithms used internally in Dilithium.
 
 *IMPORTANT! This is a "for fun" implementation written in a couple of days. It's not intended to be production-grade code. No warranty or support of any kind is provided. However, it can be useful for diving into and experimenting with post-quantum algorithms. Use it at your own risk. If you don't like those terms, you must refrain from using this software.*
+
+## Version
+Originally I implemented the version that the Dilithium team submitted to the competition. The team has since made minor changes to some parameters (reducing the size of some, switching to SHAKE256 for some invocations etc.) which are reflected in the current reference implementation. This version is often referred to as 3.1. I've updated my implementation to reflect this.
+
+At the same time, Dilithium is currently in the process of standardization into what will eventually become FIPS 204 or ML-DSA. This version is different from both the original submission as well as Dilithium 3.1 implemented here (and so also the Dilithium team reference implementation). At the time of writing I don't think it's worth implementing those changes, since many comments have already been submitted so it likely won't be final. Also I'm not aware of other implementations following it. Once the standard seems more stable and the comment period has ended I will definitely add a mode to support this new version (even if still in draft).
 
 ## Loading the security provider
 
