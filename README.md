@@ -90,5 +90,3 @@ This library is available under the Apache 2.0 license (see LICENSE). Note that 
 ## References
 For more information on the CRYSTALS project, see their [website](https://pq-crystals.org/index.shtml).
 
-## Contact
-Mail: martin@thiim.net
