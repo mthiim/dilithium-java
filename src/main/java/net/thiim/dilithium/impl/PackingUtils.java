@@ -52,7 +52,7 @@ public class PackingUtils {
 			return 128;
 		}
 		else {
-			throw new IllegalArgumentException("Invalid etA: " + eta);
+			throw new IllegalArgumentException("Invalid eta: " + eta);
 		}
 	}
 

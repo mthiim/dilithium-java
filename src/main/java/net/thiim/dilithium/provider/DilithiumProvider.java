@@ -26,7 +26,7 @@ public class DilithiumProvider extends Provider {
 	                put("Alg.Alias.KeyFactory.Dilithium", "Dilithium");
 	                
 	                /*
-                     * Key factories
+                     * Signature engines
 	                 */
 	                put("Signature.Dilithium",
 	                        "net.thiim.dilithium.provider.DilithiumSignature");
