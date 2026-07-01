@@ -100,16 +100,13 @@ public class PackingUtils {
 				+ s2.length() * POLYETA_PACKEDBYTES + s2.length() * Dilithium.POLYT0_PACKEDBYTES);
 		byte[] buf = new byte[CRYPTO_SECRETKEYBYTES];
 	
-		for (int i = 0; i < Dilithium.SEEDBYTES; i++)
-			buf[off + i] = rho[i];
+		System.arraycopy(rho, 0, buf, off, Dilithium.SEEDBYTES);
 		off += Dilithium.SEEDBYTES;
 	
-		for (int i = 0; i < Dilithium.SEEDBYTES; i++)
-			buf[off + i] = K[i];
+		System.arraycopy(K, 0, buf, off, Dilithium.SEEDBYTES);
 		off += Dilithium.SEEDBYTES;
 	
-		for (int i = 0; i < Dilithium.CRHBYTES; i++)
-			buf[off + i] = tr[i];
+		System.arraycopy(tr, 0, buf, off, Dilithium.CRHBYTES);
 		off += Dilithium.CRHBYTES;
 	
 		for (int i = 0; i < s1.length(); i++) {
@@ -133,8 +130,7 @@ public class PackingUtils {
 		int CRYPTO_PUBLICKEYBYTES = Dilithium.SEEDBYTES + t.length() * Dilithium.POLYT1_PACKEDBYTES;
 	
 		byte[] pk = new byte[CRYPTO_PUBLICKEYBYTES];
-		for (int i = 0; i < Dilithium.SEEDBYTES; i++)
-			pk[i] = rho[i];
+		System.arraycopy(rho, 0, pk, 0, Dilithium.SEEDBYTES);
 	
 		for (int i = 0; i < t.length(); i++) {
 			t.poly[i].t1pack(pk, Dilithium.SEEDBYTES + i * Dilithium.POLYT1_PACKEDBYTES);
@@ -148,8 +144,7 @@ public class PackingUtils {
 		int POLYZ_PACKEDBYTES = getPolyZPackedBytes(gamma1);
 	
 		int off = 0;
-		for (int i = 0; i < Dilithium.SEEDBYTES; i++)
-			sig[i] = c[i];
+		System.arraycopy(c, 0, sig, 0, Dilithium.SEEDBYTES);
 		off += Dilithium.SEEDBYTES;
 	
 		for (int i = 0; i < z.length(); i++) {
@@ -249,21 +244,15 @@ public class PackingUtils {
 		
 		int off = 0;
 		byte[] rho = new byte[Dilithium.SEEDBYTES];
-		for(int i = 0; i < Dilithium.SEEDBYTES; i++) {
-			rho[i] = bytes[i];
-		}
+		System.arraycopy(bytes, 0, rho, 0, Dilithium.SEEDBYTES);
 		off += Dilithium.SEEDBYTES;
 		
 		byte[] key = new byte[Dilithium.SEEDBYTES];
-		for(int i = 0; i < Dilithium.SEEDBYTES; i++) {
-			key[i] = bytes[off+i];
-		}
+		System.arraycopy(bytes, off, key, 0, Dilithium.SEEDBYTES);
 		off += Dilithium.SEEDBYTES;
 		
 		byte[] tr = new byte[Dilithium.CRHBYTES];
-		for(int i = 0; i < Dilithium.CRHBYTES; i++) {
-			tr[i] = bytes[off+i];
-		}
+		System.arraycopy(bytes, off, tr, 0, Dilithium.CRHBYTES);
 		off += Dilithium.CRHBYTES;
 		
 		PolyVec s1 = new PolyVec(parameterSpec.l);
@@ -297,9 +286,7 @@ public class PackingUtils {
 	public static DilithiumPublicKey unpackPublicKey(DilithiumParameterSpec parameterSpec, byte[] bytes) {
 		int off = 0;
 		byte[] rho = new byte[Dilithium.SEEDBYTES];
-		for (int i = 0; i < Dilithium.SEEDBYTES; i++) {
-			rho[i] = bytes[i];
-		}
+		System.arraycopy(bytes, 0, rho, 0, Dilithium.SEEDBYTES);
 		off += Dilithium.SEEDBYTES;
 	
 		PolyVec p = new PolyVec(parameterSpec.k);

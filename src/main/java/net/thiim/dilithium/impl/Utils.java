@@ -10,19 +10,13 @@ import net.thiim.dilithium.interfaces.DilithiumParameterSpec;
 public class Utils {
 	public static void clear(byte[] x)
 	{
-		for(int i = 0; i < x.length; i++) {
-			x[i] = 0;
-		}
+		java.util.Arrays.fill(x, (byte) 0);
 	}
 
 	public static byte[] concat(byte[]... arr) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		for (byte[] x : arr) {
-			try {
-				baos.write(x);
-			} catch (IOException e) {
-				throw new RuntimeException("Unexpected error");
-			}
+			baos.write(x, 0, x.length);
 		}
 		return baos.toByteArray();
 	}
