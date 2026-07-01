@@ -98,20 +98,12 @@ public class Dilithium {
 
 		byte[] sig = new byte[CRYPTO_BYTES];
 		
-		PolyVec[] A;
-		if(prv instanceof DilithiumPrivateKeyImpl) {
-			A = ((DilithiumPrivateKeyImpl)prv).getA();
-		}
-		else {
-			A = expandA(prv.getRho(), spec.k, spec.l);	
-		}
-
-		
 		byte[] conc = Utils.concat(prv.getTr(), M);
 		byte[] mu = Utils.mucrh(conc);
 		conc = Utils.concat(prv.getK(), mu);
 		byte[] rhoprime = Utils.mucrh(conc);
 
+		PolyVec[] A;
 		PolyVec s1, s2, t0;
 		if(prv instanceof DilithiumPrivateKeyImpl) {
 			A = ((DilithiumPrivateKeyImpl)prv).getA();
@@ -120,6 +112,7 @@ public class Dilithium {
 			t0 = prv.getT0Hat();
 		}
 		else {
+			A = expandA(prv.getRho(), spec.k, spec.l);
 			s1 = prv.getS1().ntt();
 			s2 = prv.getS2().ntt();
 			t0 = prv.getT0().ntt();
