@@ -2,7 +2,6 @@ package net.thiim.dilithium.interfaces;
 
 import java.security.PrivateKey;
 
-import net.thiim.dilithium.impl.Poly;
 import net.thiim.dilithium.impl.PolyVec;
 
 public interface DilithiumPrivateKey extends PrivateKey {

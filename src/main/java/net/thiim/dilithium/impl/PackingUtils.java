@@ -1,8 +1,7 @@
 package net.thiim.dilithium.impl;
 
-import java.security.PrivateKey;
-
 import net.thiim.dilithium.interfaces.DilithiumParameterSpec;
+import net.thiim.dilithium.interfaces.DilithiumPrivateKey;
 import net.thiim.dilithium.interfaces.DilithiumPublicKey;
 
 public class PackingUtils {
@@ -245,7 +244,7 @@ public class PackingUtils {
 		return p;
 	}
 
-	public static PrivateKey unpackPrivateKey(DilithiumParameterSpec parameterSpec, byte[] bytes) {
+	public static DilithiumPrivateKey unpackPrivateKey(DilithiumParameterSpec parameterSpec, byte[] bytes) {
 		final int POLYETA_PACKEDBYTES = getPolyEtaPackedBytes(parameterSpec.eta);
 		
 		int off = 0;
