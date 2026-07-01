@@ -26,23 +26,23 @@ public class DilithiumSignature extends SignatureSpi {
 	@Override
 	protected void engineInitVerify(PublicKey publicKey) throws InvalidKeyException {		
 		if(!(publicKey instanceof DilithiumPublicKey)) {
-			throw new IllegalArgumentException("Not a valid public key");
+			throw new InvalidKeyException("Not a valid public key");
 		}
 		
 		mode = Mode.VERIFY;
 		pubk = (DilithiumPublicKey)publicKey;
-		baos = new ByteArrayOutputStream();
+		resetMessageBuffer();
 	}
 
 	@Override
 	protected void engineInitSign(PrivateKey privateKey) throws InvalidKeyException {
 		if(!(privateKey instanceof DilithiumPrivateKey)) {
-			throw new IllegalArgumentException("Not a valid private key");
+			throw new InvalidKeyException("Not a valid private key");
 		}
 		
 		mode = Mode.SIGN;
 		prvk = (DilithiumPrivateKey)privateKey;
-		baos = new ByteArrayOutputStream();
+		resetMessageBuffer();
 	}
 
 	@Override
@@ -62,7 +62,7 @@ public class DilithiumSignature extends SignatureSpi {
 		}
 		byte[] M = baos.toByteArray();
 		byte[] sig = Dilithium.sign(prvk, M);
-		baos = new ByteArrayOutputStream();
+		resetMessageBuffer();
 		return sig;
 	}
 
@@ -73,8 +73,12 @@ public class DilithiumSignature extends SignatureSpi {
 		}
 		byte[] M = baos.toByteArray();		
 		boolean match = Dilithium.verify(pubk, sigBytes, M);
-		baos = new ByteArrayOutputStream();
+		resetMessageBuffer();
 		return match;
+	}
+
+	private void resetMessageBuffer() {
+		baos = new ByteArrayOutputStream();
 	}
 
 	@Override
