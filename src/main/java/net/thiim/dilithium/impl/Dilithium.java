@@ -123,55 +123,62 @@ public class Dilithium {
 
 		int kappa = 0;
 		for (;;) {
-			PolyVec y = PolyVec.randomVecGamma1(rhoprime, spec.l, spec.gamma1, kappa++);
-			PolyVec z = y.ntt();
-			PolyVec w = z.mulMatrixPointwiseMontgomery(A);
-			w.reduce();
-			w.invnttTomont();
-			w.caddq();
-			PolyVec[] res = w.decompose(spec.gamma2);
-			PackingUtils.packw1(spec.gamma2, res[1], sig);
-
-			SHAKEDigest s = new SHAKEDigest(SHAKE256_STRENGTH);
-			s.update(mu, 0, mu.length);
-			s.update(sig, 0, res[1].length() * PackingUtils.getPolyW1PackedBytes(spec.gamma2));
-			s.doOutput(sig, 0, SEEDBYTES);
-
-			Poly cp = generateChallenge(spec.tau, sig);
-			cp = cp.ntt();
-			z = s1.pointwiseMontgomery(cp);
-			z.invnttTomont();
-			z = z.add(y);
-			z.reduce();
-			if (z.chknorm(spec.gamma1 - spec.beta)) {
-				continue;
+			byte[] result = attemptSignature(spec, rhoprime, A, s1, s2, t0, sig, mu, kappa++);
+			if (result != null) {
+				return result;
 			}
-			PolyVec h = s2.pointwiseMontgomery(cp);
-			h.invnttTomont();
-			PolyVec w0 = res[0].sub(h);
-			w0.reduce();
-			if (w0.chknorm(spec.gamma2 - spec.beta)) {
-				continue;
-			}
-
-			h = t0.pointwiseMontgomery(cp);
-			h.invnttTomont();
-			h.reduce();
-			if (h.chknorm(spec.gamma2)) {
-				continue;
-			}
-
-			w0 = w0.add(h);
-			w0.caddq();
-
-			Hints hints = makeHints(spec.gamma2, w0, res[1]);
-			if (hints.cnt > spec.omega) {
-				continue;
-			}
-
-			PackingUtils.packSig(spec.gamma1, spec.omega, sig, sig, z, hints.v);
-			return sig;
 		}
+	}
+
+	private static byte[] attemptSignature(DilithiumParameterSpec spec, byte[] rhoprime, PolyVec[] A, PolyVec s1, PolyVec s2, PolyVec t0, byte[] sig, byte[] mu, int kappa) {
+		PolyVec y = PolyVec.randomVecGamma1(rhoprime, spec.l, spec.gamma1, kappa);
+		PolyVec z = y.ntt();
+		PolyVec w = z.mulMatrixPointwiseMontgomery(A);
+		w.reduce();
+		w.invnttTomont();
+		w.caddq();
+		PolyVec[] res = w.decompose(spec.gamma2);
+		PackingUtils.packw1(spec.gamma2, res[1], sig);
+
+		SHAKEDigest s = new SHAKEDigest(SHAKE256_STRENGTH);
+		s.update(mu, 0, mu.length);
+		s.update(sig, 0, res[1].length() * PackingUtils.getPolyW1PackedBytes(spec.gamma2));
+		s.doOutput(sig, 0, SEEDBYTES);
+
+		Poly cp = generateChallenge(spec.tau, sig);
+		cp = cp.ntt();
+		z = s1.pointwiseMontgomery(cp);
+		z.invnttTomont();
+		z = z.add(y);
+		z.reduce();
+		if (z.chknorm(spec.gamma1 - spec.beta)) {
+			return null;
+		}
+		PolyVec h = s2.pointwiseMontgomery(cp);
+		h.invnttTomont();
+		PolyVec w0 = res[0].sub(h);
+		w0.reduce();
+		if (w0.chknorm(spec.gamma2 - spec.beta)) {
+			return null;
+		}
+
+		h = t0.pointwiseMontgomery(cp);
+		h.invnttTomont();
+		h.reduce();
+		if (h.chknorm(spec.gamma2)) {
+			return null;
+		}
+
+		w0 = w0.add(h);
+		w0.caddq();
+
+		Hints hints = makeHints(spec.gamma2, w0, res[1]);
+		if (hints.cnt > spec.omega) {
+			return null;
+		}
+
+		PackingUtils.packSig(spec.gamma1, spec.omega, sig, sig, z, hints.v);
+		return sig;
 	}
 	
 	public static boolean verify(DilithiumPublicKey pk, byte[] sig, byte[] M) {
