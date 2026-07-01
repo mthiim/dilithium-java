@@ -50,7 +50,7 @@ public class Poly {
 		}
 
 		int ctr;
-		SHAKEDigest s = new SHAKEDigest(256);
+		SHAKEDigest s = new SHAKEDigest(Dilithium.SHAKE256_STRENGTH);
 		s.update(rho, 0, rho.length);
 
 		byte[] non = encodeNonce(nonce);
@@ -139,7 +139,7 @@ public class Poly {
 		int buflen = POLY_UNIFORM_NBLOCKS * Dilithium.STREAM128_BLOCKBYTES;
 		byte[] buf = new byte[buflen + 2];
 
-		SHAKEDigest s = new SHAKEDigest(128);
+		SHAKEDigest s = new SHAKEDigest(Dilithium.SHAKE128_STRENGTH);
 		s.update(rho, 0, rho.length);
 
 		byte[] non = encodeNonce(nonce);
@@ -330,7 +330,7 @@ public class Poly {
 	public static Poly genRandomGamma1(byte[] seed, int nonce, int N, int gamma1) {
 		Poly pre = new Poly(N);
 		byte[] buf = new byte[Dilithium.POLY_UNIFORM_GAMMA1_NBLOCKS * Dilithium.STREAM256_BLOCKBYTES];
-		SHAKEDigest s = new SHAKEDigest(256);
+		SHAKEDigest s = new SHAKEDigest(Dilithium.SHAKE256_STRENGTH);
 		s.update(seed, 0, seed.length);
 
 		byte[] non = encodeNonce(nonce);

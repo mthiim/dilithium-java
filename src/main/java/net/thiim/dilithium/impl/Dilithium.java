@@ -20,8 +20,10 @@ public class Dilithium {
 	public final static int CRHBYTES = 32;
 	public final static int SHAKE128_RATE = 168;
 	public final static int SHAKE256_RATE = 136;
-	public final static int STREAM128_BLOCKBYTES = Dilithium.SHAKE128_RATE;
-	public final static int STREAM256_BLOCKBYTES = SHAKE256_RATE;
+	public static final int STREAM128_BLOCKBYTES = 168;
+	public static final int STREAM256_BLOCKBYTES = 136;
+	public static final int SHAKE128_STRENGTH = 128;
+	public static final int SHAKE256_STRENGTH = 256;
 	public final static int POLY_UNIFORM_GAMMA1_NBLOCKS = ((576 + STREAM256_BLOCKBYTES - 1) / STREAM256_BLOCKBYTES);
 	public final static int zetas[] = new int[] { 0, 25847, -2608894, -518909, 237124, -777960, -876248, 466468,
 	1826347, 2353451, -359251, -2091905, 3119733, -2884855, 3111497, 2680103, 2725464, 1024112, -1079900,
@@ -130,7 +132,7 @@ public class Dilithium {
 			PolyVec[] res = w.decompose(spec.gamma2);
 			PackingUtils.packw1(spec.gamma2, res[1], sig);
 
-			SHAKEDigest s = new SHAKEDigest(256);
+			SHAKEDigest s = new SHAKEDigest(SHAKE256_STRENGTH);
 			s.update(mu, 0, mu.length);
 			s.update(sig, 0, res[1].length() * PackingUtils.getPolyW1PackedBytes(spec.gamma2));
 			s.doOutput(sig, 0, SEEDBYTES);
@@ -373,7 +375,7 @@ public class Dilithium {
 		long signs;
 		byte[] buf = new byte[SHAKE256_RATE];
 
-		SHAKEDigest s = new SHAKEDigest(256);
+		SHAKEDigest s = new SHAKEDigest(SHAKE256_STRENGTH);
 		s.update(seed, 0, SEEDBYTES);
 		s.doOutput(buf, 0, buf.length);
 

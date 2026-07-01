@@ -23,7 +23,7 @@ public class Utils {
 
 	public static byte[] getSHAKE256Digest(int sz, byte[]... arr) {
 		byte[] c = concat(arr);
-		SHAKEDigest s = new SHAKEDigest(256);
+		SHAKEDigest s = new SHAKEDigest(Dilithium.SHAKE256_STRENGTH);
 		s.update(c, 0, c.length);
 		byte[] o = new byte[sz];
 		s.doOutput(o, 0, o.length);
