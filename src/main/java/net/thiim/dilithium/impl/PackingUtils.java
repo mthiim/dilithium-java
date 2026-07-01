@@ -109,21 +109,25 @@ public class PackingUtils {
 		System.arraycopy(tr, 0, buf, off, Dilithium.CRHBYTES);
 		off += Dilithium.CRHBYTES;
 	
-		for (int i = 0; i < s1.length(); i++) {
-			s1.poly[i].etapack(eta, buf, off);
-			off += POLYETA_PACKEDBYTES;
-		}
-	
-		for (int i = 0; i < s2.length(); i++) {
-			s2.poly[i].etapack(eta, buf, off);
-			off += POLYETA_PACKEDBYTES;
-		}
-	
-		for (int i = 0; i < t0.length(); i++) {
-			t0.poly[i].t0pack(buf, off);
-			off += Dilithium.POLYT0_PACKEDBYTES;
-		}
+		off += packEta(eta, s1, buf, off, POLYETA_PACKEDBYTES);
+		off += packEta(eta, s2, buf, off, POLYETA_PACKEDBYTES);
+		off += packT0(t0, buf, off);
+		
 		return buf;
+	}
+
+	private static int packEta(int eta, PolyVec v, byte[] buf, int off, int polyEtaPackedBytes) {
+		for (int i = 0; i < v.length(); i++) {
+			v.poly[i].etapack(eta, buf, off + i * polyEtaPackedBytes);
+		}
+		return v.length() * polyEtaPackedBytes;
+	}
+
+	private static int packT0(PolyVec v, byte[] buf, int off) {
+		for (int i = 0; i < v.length(); i++) {
+			v.poly[i].t0pack(buf, off + i * Dilithium.POLYT0_PACKEDBYTES);
+		}
+		return v.length() * Dilithium.POLYT0_PACKEDBYTES;
 	}
 
 	static byte[] packPubKey(byte[] rho, PolyVec t) {
