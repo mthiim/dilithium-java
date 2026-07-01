@@ -53,9 +53,7 @@ public class Poly {
 		SHAKEDigest s = new SHAKEDigest(256);
 		s.update(rho, 0, rho.length);
 
-		byte[] non = new byte[2];
-		non[0] = (byte) (nonce & 0xFF);
-		non[1] = (byte) ((nonce >> 8) & 0xFF);
+		byte[] non = encodeNonce(nonce);
 		s.update(non, 0, 2);
 
 		byte[] bb = new byte[POLY_UNIFORM_ETA_NBLOCKS * Dilithium.STREAM256_BLOCKBYTES];
@@ -144,9 +142,7 @@ public class Poly {
 		SHAKEDigest s = new SHAKEDigest(128);
 		s.update(rho, 0, rho.length);
 
-		byte[] non = new byte[2];
-		non[0] = (byte) (nonce & 0xFF);
-		non[1] = (byte) ((nonce >> 8) & 0xFF);
+		byte[] non = encodeNonce(nonce);
 		s.update(non, 0, 2);
 		s.doOutput(buf, 0, buflen);
 		
@@ -337,9 +333,7 @@ public class Poly {
 		SHAKEDigest s = new SHAKEDigest(256);
 		s.update(seed, 0, seed.length);
 
-		byte[] non = new byte[2];
-		non[0] = (byte) (nonce & 0xFF);
-		non[1] = (byte) ((nonce >> 8) & 0xFF);
+		byte[] non = encodeNonce(nonce);
 		s.update(non, 0, 2);
 		s.doOutput(buf, 0, buf.length);
 
@@ -511,5 +505,12 @@ public class Poly {
 		for (int i = 0; i < Dilithium.N; i++)
 			pr.coef[i] = (this.coef[i] << Dilithium.D);
 		return pr;
+	}
+
+	private static byte[] encodeNonce(int nonce) {
+		byte[] non = new byte[2];
+		non[0] = (byte) (nonce & 0xFF);
+		non[1] = (byte) ((nonce >> 8) & 0xFF);
+		return non;
 	}
 }
