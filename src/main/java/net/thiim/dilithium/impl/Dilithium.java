@@ -184,7 +184,7 @@ public class Dilithium {
 		int CRYPTO_BYTES = Utils.getSigLength(spec);
 
 		if (sig.length != CRYPTO_BYTES) {
-			throw new RuntimeException("Bad signature");
+			throw new IllegalArgumentException("Invalid signature");
 		}
 
 		PolyVec t1 = pk.getT1();
@@ -206,12 +206,12 @@ public class Dilithium {
 			h.poly[i] = new Poly(N);
 
 			if ((sig[off + spec.omega + i] & 0xFF) < k || (sig[off + spec.omega + i] & 0xFF) > spec.omega)
-				throw new RuntimeException("Bad signature");
+				throw new IllegalArgumentException("Invalid signature");
 
 			for (int j = k; j < (sig[off + spec.omega + i] & 0xFF); j++) {
 				/* Coefficients are ordered for strong unforgeability */
 				if (j > k && (sig[off + j] & 0xFF) <= (sig[off + j - 1] & 0xFF))
-					throw new RuntimeException("Bad signature");
+					throw new IllegalArgumentException("Invalid signature");
 				h.poly[i].coef[sig[off + j] & 0xFF] = 1;
 			}
 
@@ -226,7 +226,7 @@ public class Dilithium {
 		}
 		
 		if (z.chknorm(spec.gamma1 - spec.beta)) {
-			throw new RuntimeException("Bad signature");
+			throw new IllegalArgumentException("Invalid signature");
 		}
 
 		byte[] mu = Utils.crh(pk.getEncoded());
