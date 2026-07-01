@@ -27,13 +27,13 @@ public class Poly {
 	}
 
 	public String toString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("[");
 		for (int i = 0; i < coef.length; i++) {
 			if (i != 0) {
 				sb.append(", ");
 			}
-			sb.append("" + coef[i]);
+			sb.append(coef[i]);
 		}
 		sb.append("]");
 		return sb.toString();
@@ -50,12 +50,10 @@ public class Poly {
 		}
 
 		int ctr;
-		SHAKEDigest s = new SHAKEDigest(256);
+		SHAKEDigest s = new SHAKEDigest(Dilithium.SHAKE256_STRENGTH);
 		s.update(rho, 0, rho.length);
 
-		byte[] non = new byte[2];
-		non[0] = (byte) (nonce & 0xFF);
-		non[1] = (byte) ((nonce >> 8) & 0xFF);
+		byte[] non = encodeNonce(nonce);
 		s.update(non, 0, 2);
 
 		byte[] bb = new byte[POLY_UNIFORM_ETA_NBLOCKS * Dilithium.STREAM256_BLOCKBYTES];
@@ -141,12 +139,10 @@ public class Poly {
 		int buflen = POLY_UNIFORM_NBLOCKS * Dilithium.STREAM128_BLOCKBYTES;
 		byte[] buf = new byte[buflen + 2];
 
-		SHAKEDigest s = new SHAKEDigest(128);
+		SHAKEDigest s = new SHAKEDigest(Dilithium.SHAKE128_STRENGTH);
 		s.update(rho, 0, rho.length);
 
-		byte[] non = new byte[2];
-		non[0] = (byte) (nonce & 0xFF);
-		non[1] = (byte) ((nonce >> 8) & 0xFF);
+		byte[] non = encodeNonce(nonce);
 		s.update(non, 0, 2);
 		s.doOutput(buf, 0, buflen);
 		
@@ -334,12 +330,10 @@ public class Poly {
 	public static Poly genRandomGamma1(byte[] seed, int nonce, int N, int gamma1) {
 		Poly pre = new Poly(N);
 		byte[] buf = new byte[Dilithium.POLY_UNIFORM_GAMMA1_NBLOCKS * Dilithium.STREAM256_BLOCKBYTES];
-		SHAKEDigest s = new SHAKEDigest(256);
+		SHAKEDigest s = new SHAKEDigest(Dilithium.SHAKE256_STRENGTH);
 		s.update(seed, 0, seed.length);
 
-		byte[] non = new byte[2];
-		non[0] = (byte) (nonce & 0xFF);
-		non[1] = (byte) ((nonce >> 8) & 0xFF);
+		byte[] non = encodeNonce(nonce);
 		s.update(non, 0, 2);
 		s.doOutput(buf, 0, buf.length);
 
@@ -402,19 +396,19 @@ public class Poly {
 			int a = this.coef[i];
 
 			int a1 = (a + 127) >> 7;
-		if (gamma2 == (Dilithium.Q - 1) / 32) {
-			a1 = (a1 * 1025 + (1 << 21)) >> 22;
-			a1 &= 15;
+			if (gamma2 == (Dilithium.Q - 1) / 32) {
+				a1 = (a1 * 1025 + (1 << 21)) >> 22;
+				a1 &= 15;
 
-		} else if (gamma2 == (Dilithium.Q - 1) / 88) {
-			a1 = (a1 * 11275 + (1 << 23)) >> 24;
-			a1 ^= ((43 - a1) >> 31) & a1;
-		} else {
-			throw new IllegalArgumentException("Invalid gamma2: " + gamma2);
-		}
-		pr[0].coef[i] = a - a1 * 2 * gamma2;
-		pr[0].coef[i] -= (((Dilithium.Q - 1) / 2 - pr[0].coef[i]) >> 31) & Dilithium.Q;
-		pr[1].coef[i] = a1;
+			} else if (gamma2 == (Dilithium.Q - 1) / 88) {
+				a1 = (a1 * 11275 + (1 << 23)) >> 24;
+				a1 ^= ((43 - a1) >> 31) & a1;
+			} else {
+				throw new IllegalArgumentException("Invalid gamma2: " + gamma2);
+			}
+			pr[0].coef[i] = a - a1 * 2 * gamma2;
+			pr[0].coef[i] -= (((Dilithium.Q - 1) / 2 - pr[0].coef[i]) >> 31) & Dilithium.Q;
+			pr[1].coef[i] = a1;
 		}
 		return pr;
 	}
@@ -453,11 +447,11 @@ public class Poly {
 		for (int i = 0; i < Dilithium.N; i++) {
 			/* Absolute value */
 			t = coef[i] >> 31;
-		t = coef[i] - (t & 2 * coef[i]);
+			t = coef[i] - (t & 2 * coef[i]);
 
-		if (t >= B) {
-			return true;
-		}
+			if (t >= B) {
+				return true;
+			}
 		}
 
 		return false;
@@ -511,5 +505,12 @@ public class Poly {
 		for (int i = 0; i < Dilithium.N; i++)
 			pr.coef[i] = (this.coef[i] << Dilithium.D);
 		return pr;
+	}
+
+	private static byte[] encodeNonce(int nonce) {
+		byte[] non = new byte[2];
+		non[0] = (byte) (nonce & 0xFF);
+		non[1] = (byte) ((nonce >> 8) & 0xFF);
+		return non;
 	}
 }

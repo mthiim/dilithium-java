@@ -20,8 +20,10 @@ public class Dilithium {
 	public final static int CRHBYTES = 32;
 	public final static int SHAKE128_RATE = 168;
 	public final static int SHAKE256_RATE = 136;
-	public final static int STREAM128_BLOCKBYTES = Dilithium.SHAKE128_RATE;
-	public final static int STREAM256_BLOCKBYTES = SHAKE256_RATE;
+	public static final int STREAM128_BLOCKBYTES = 168;
+	public static final int STREAM256_BLOCKBYTES = 136;
+	public static final int SHAKE128_STRENGTH = 128;
+	public static final int SHAKE256_STRENGTH = 256;
 	public final static int POLY_UNIFORM_GAMMA1_NBLOCKS = ((576 + STREAM256_BLOCKBYTES - 1) / STREAM256_BLOCKBYTES);
 	public final static int zetas[] = new int[] { 0, 25847, -2608894, -518909, 237124, -777960, -876248, 466468,
 	1826347, 2353451, -359251, -2091905, 3119733, -2884855, 3111497, 2680103, 2725464, 1024112, -1079900,
@@ -98,20 +100,12 @@ public class Dilithium {
 
 		byte[] sig = new byte[CRYPTO_BYTES];
 		
-		PolyVec[] A;
-		if(prv instanceof DilithiumPrivateKeyImpl) {
-			A = ((DilithiumPrivateKeyImpl)prv).getA();
-		}
-		else {
-			A = expandA(prv.getRho(), spec.k, spec.l);	
-		}
-
-		
 		byte[] conc = Utils.concat(prv.getTr(), M);
 		byte[] mu = Utils.mucrh(conc);
 		conc = Utils.concat(prv.getK(), mu);
 		byte[] rhoprime = Utils.mucrh(conc);
 
+		PolyVec[] A;
 		PolyVec s1, s2, t0;
 		if(prv instanceof DilithiumPrivateKeyImpl) {
 			A = ((DilithiumPrivateKeyImpl)prv).getA();
@@ -120,6 +114,7 @@ public class Dilithium {
 			t0 = prv.getT0Hat();
 		}
 		else {
+			A = expandA(prv.getRho(), spec.k, spec.l);
 			s1 = prv.getS1().ntt();
 			s2 = prv.getS2().ntt();
 			t0 = prv.getT0().ntt();
@@ -128,55 +123,62 @@ public class Dilithium {
 
 		int kappa = 0;
 		for (;;) {
-			PolyVec y = PolyVec.randomVecGamma1(rhoprime, spec.l, spec.gamma1, kappa++);
-			PolyVec z = y.ntt();
-			PolyVec w = z.mulMatrixPointwiseMontgomery(A);
-			w.reduce();
-			w.invnttTomont();
-			w.caddq();
-			PolyVec[] res = w.decompose(spec.gamma2);
-			PackingUtils.packw1(spec.gamma2, res[1], sig);
-
-			SHAKEDigest s = new SHAKEDigest(256);
-			s.update(mu, 0, mu.length);
-			s.update(sig, 0, res[1].length() * PackingUtils.getPolyW1PackedBytes(spec.gamma2));
-			s.doOutput(sig, 0, SEEDBYTES);
-
-			Poly cp = generateChallenge(spec.tau, sig);
-			cp = cp.ntt();
-			z = s1.pointwiseMontgomery(cp);
-			z.invnttTomont();
-			z = z.add(y);
-			z.reduce();
-			if (z.chknorm(spec.gamma1 - spec.beta)) {
-				continue;
+			byte[] result = attemptSignature(spec, rhoprime, A, s1, s2, t0, sig, mu, kappa++);
+			if (result != null) {
+				return result;
 			}
-			PolyVec h = s2.pointwiseMontgomery(cp);
-			h.invnttTomont();
-			PolyVec w0 = res[0].sub(h);
-			w0.reduce();
-			if (w0.chknorm(spec.gamma2 - spec.beta)) {
-				continue;
-			}
-
-			h = t0.pointwiseMontgomery(cp);
-			h.invnttTomont();
-			h.reduce();
-			if (h.chknorm(spec.gamma2)) {
-				continue;
-			}
-
-			w0 = w0.add(h);
-			w0.caddq();
-
-			Hints hints = makeHints(spec.gamma2, w0, res[1]);
-			if (hints.cnt > spec.omega) {
-				continue;
-			}
-
-			PackingUtils.packSig(spec.gamma1, spec.omega, sig, sig, z, hints.v);
-			return sig;
 		}
+	}
+
+	private static byte[] attemptSignature(DilithiumParameterSpec spec, byte[] rhoprime, PolyVec[] A, PolyVec s1, PolyVec s2, PolyVec t0, byte[] sig, byte[] mu, int kappa) {
+		PolyVec y = PolyVec.randomVecGamma1(rhoprime, spec.l, spec.gamma1, kappa);
+		PolyVec z = y.ntt();
+		PolyVec w = z.mulMatrixPointwiseMontgomery(A);
+		w.reduce();
+		w.invnttTomont();
+		w.caddq();
+		PolyVec[] res = w.decompose(spec.gamma2);
+		PackingUtils.packw1(spec.gamma2, res[1], sig);
+
+		SHAKEDigest s = new SHAKEDigest(SHAKE256_STRENGTH);
+		s.update(mu, 0, mu.length);
+		s.update(sig, 0, res[1].length() * PackingUtils.getPolyW1PackedBytes(spec.gamma2));
+		s.doOutput(sig, 0, SEEDBYTES);
+
+		Poly cp = generateChallenge(spec.tau, sig);
+		cp = cp.ntt();
+		z = s1.pointwiseMontgomery(cp);
+		z.invnttTomont();
+		z = z.add(y);
+		z.reduce();
+		if (z.chknorm(spec.gamma1 - spec.beta)) {
+			return null;
+		}
+		PolyVec h = s2.pointwiseMontgomery(cp);
+		h.invnttTomont();
+		PolyVec w0 = res[0].sub(h);
+		w0.reduce();
+		if (w0.chknorm(spec.gamma2 - spec.beta)) {
+			return null;
+		}
+
+		h = t0.pointwiseMontgomery(cp);
+		h.invnttTomont();
+		h.reduce();
+		if (h.chknorm(spec.gamma2)) {
+			return null;
+		}
+
+		w0 = w0.add(h);
+		w0.caddq();
+
+		Hints hints = makeHints(spec.gamma2, w0, res[1]);
+		if (hints.cnt > spec.omega) {
+			return null;
+		}
+
+		PackingUtils.packSig(spec.gamma1, spec.omega, sig, sig, z, hints.v);
+		return sig;
 	}
 	
 	public static boolean verify(DilithiumPublicKey pk, byte[] sig, byte[] M) {
@@ -184,7 +186,7 @@ public class Dilithium {
 		int CRYPTO_BYTES = Utils.getSigLength(spec);
 
 		if (sig.length != CRYPTO_BYTES) {
-			throw new RuntimeException("Bad signature");
+			throw new IllegalArgumentException("Invalid signature");
 		}
 
 		PolyVec t1 = pk.getT1();
@@ -206,12 +208,12 @@ public class Dilithium {
 			h.poly[i] = new Poly(N);
 
 			if ((sig[off + spec.omega + i] & 0xFF) < k || (sig[off + spec.omega + i] & 0xFF) > spec.omega)
-				throw new RuntimeException("Bad signature");
+				throw new IllegalArgumentException("Invalid signature");
 
 			for (int j = k; j < (sig[off + spec.omega + i] & 0xFF); j++) {
 				/* Coefficients are ordered for strong unforgeability */
 				if (j > k && (sig[off + j] & 0xFF) <= (sig[off + j - 1] & 0xFF))
-					throw new RuntimeException("Bad signature");
+					throw new IllegalArgumentException("Invalid signature");
 				h.poly[i].coef[sig[off + j] & 0xFF] = 1;
 			}
 
@@ -226,7 +228,7 @@ public class Dilithium {
 		}
 		
 		if (z.chknorm(spec.gamma1 - spec.beta)) {
-			throw new RuntimeException("Bad signature");
+			throw new IllegalArgumentException("Invalid signature");
 		}
 
 		byte[] mu = Utils.crh(pk.getEncoded());
@@ -380,7 +382,7 @@ public class Dilithium {
 		long signs;
 		byte[] buf = new byte[SHAKE256_RATE];
 
-		SHAKEDigest s = new SHAKEDigest(256);
+		SHAKEDigest s = new SHAKEDigest(SHAKE256_STRENGTH);
 		s.update(seed, 0, SEEDBYTES);
 		s.doOutput(buf, 0, buf.length);
 

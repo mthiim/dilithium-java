@@ -16,7 +16,7 @@ public class DilithiumKeyFactory extends KeyFactorySpi {
 	@Override
 	protected PublicKey engineGeneratePublic(KeySpec keySpec) throws InvalidKeySpecException {
 		if (!(keySpec instanceof DilithiumPublicKeySpec)) {
-			throw new IllegalArgumentException("Invalid key spec");
+			throw new InvalidKeySpecException("Invalid public key spec");
 		}
 		DilithiumPublicKeySpec pubspec = (DilithiumPublicKeySpec) keySpec;
 		return PackingUtils.unpackPublicKey(pubspec.getParameterSpec(), pubspec.getBytes());
@@ -25,7 +25,7 @@ public class DilithiumKeyFactory extends KeyFactorySpi {
 	@Override
 	protected PrivateKey engineGeneratePrivate(KeySpec keySpec) throws InvalidKeySpecException {
 		if (!(keySpec instanceof DilithiumPrivateKeySpec)) {
-			throw new IllegalArgumentException("Invalid key spec");
+			throw new InvalidKeySpecException("Invalid private key spec");
 		}
 		DilithiumPrivateKeySpec prvspec = (DilithiumPrivateKeySpec) keySpec;
 		return PackingUtils.unpackPrivateKey(prvspec.getParameterSpec(), prvspec.getBytes());
