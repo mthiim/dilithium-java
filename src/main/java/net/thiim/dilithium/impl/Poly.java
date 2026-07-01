@@ -402,19 +402,19 @@ public class Poly {
 			int a = this.coef[i];
 
 			int a1 = (a + 127) >> 7;
-		if (gamma2 == (Dilithium.Q - 1) / 32) {
-			a1 = (a1 * 1025 + (1 << 21)) >> 22;
-			a1 &= 15;
+			if (gamma2 == (Dilithium.Q - 1) / 32) {
+				a1 = (a1 * 1025 + (1 << 21)) >> 22;
+				a1 &= 15;
 
-		} else if (gamma2 == (Dilithium.Q - 1) / 88) {
-			a1 = (a1 * 11275 + (1 << 23)) >> 24;
-			a1 ^= ((43 - a1) >> 31) & a1;
-		} else {
-			throw new IllegalArgumentException("Invalid gamma2: " + gamma2);
-		}
-		pr[0].coef[i] = a - a1 * 2 * gamma2;
-		pr[0].coef[i] -= (((Dilithium.Q - 1) / 2 - pr[0].coef[i]) >> 31) & Dilithium.Q;
-		pr[1].coef[i] = a1;
+			} else if (gamma2 == (Dilithium.Q - 1) / 88) {
+				a1 = (a1 * 11275 + (1 << 23)) >> 24;
+				a1 ^= ((43 - a1) >> 31) & a1;
+			} else {
+				throw new IllegalArgumentException("Invalid gamma2: " + gamma2);
+			}
+			pr[0].coef[i] = a - a1 * 2 * gamma2;
+			pr[0].coef[i] -= (((Dilithium.Q - 1) / 2 - pr[0].coef[i]) >> 31) & Dilithium.Q;
+			pr[1].coef[i] = a1;
 		}
 		return pr;
 	}
@@ -453,11 +453,11 @@ public class Poly {
 		for (int i = 0; i < Dilithium.N; i++) {
 			/* Absolute value */
 			t = coef[i] >> 31;
-		t = coef[i] - (t & 2 * coef[i]);
+			t = coef[i] - (t & 2 * coef[i]);
 
-		if (t >= B) {
-			return true;
-		}
+			if (t >= B) {
+				return true;
+			}
 		}
 
 		return false;
